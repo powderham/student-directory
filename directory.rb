@@ -2,9 +2,9 @@
 
 def interactive_menu
     loop do
-       
-        print_menu
-       process(gets.chomp) 
+       try_load_students
+       print_menu
+       process(STDIN.gets.chomp) 
 
     end
 end
@@ -48,13 +48,13 @@ def input_students
     
     #get the first name
     puts "Enter a name."
-    name = gets.chop
+    name = STDIN.gets.chop
     
     puts "Enter a cohort."
-    cohort = gets.chop
+    cohort = STDIN.gets.chop
     
     puts "Enter a hobby."
-    hobby = gets.chomp
+    hobby = STDIN.gets.chomp
     
     #while the name is not empty, repeat this code
     while !name.empty? do
@@ -63,17 +63,31 @@ def input_students
         puts "Now we have #{@students.count} student#{@students.count == 1 ? '' : 's'}"
         # get another name from the user
         puts "Enter another name or leave blank to end."
-        name = gets.chop
+        name = STDIN.gets.chop
         
         puts "Enter a cohort or leave blank to end."
-        cohort = gets.chop
+        cohort = STDIN.gets.chop
         
         puts "Enter a hobby or leave blank to end."
-        hobby = gets.chop
+        hobby = STDIN.gets.chop
     end
 end
 
-def load_students
+def try_load_students
+
+    filename = ARGV.first #argument given in command line to be used as filename
+    return if filename.nil? #if no filename given then end method
+    
+    if File.exists?(filename)
+        load_students(filename) 
+            puts "Loaded #{@students.count} student#{@students.count == 1 ? '' : 's'} from #{filename}"
+    else
+        puts "Sorry, #{filename} doesn't exist"
+        exit
+    end
+end
+
+def load_students(filename = "students.csv")
     file = File.open("students.csv", "r")
     file.readlines.each do |line|
     name, cohort = line.chomp.split(',')
