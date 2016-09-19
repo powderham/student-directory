@@ -2,10 +2,8 @@
 
 def interactive_menu
     loop do
-       try_load_students
        print_menu
-       process(STDIN.gets.chomp) 
-
+       process(STDIN.gets.chomp)
     end
 end
 
@@ -24,6 +22,8 @@ def show_students
 end
 
 def process(selection)
+    puts "Option #{selection} selected"
+    puts ""
     case selection
         when "1"
             selection = input_students
@@ -43,6 +43,8 @@ end
 
 def input_students
     
+    count = 0
+    
     puts "Please enter the names of the students"
     puts "To finish, leave the name and hobby blank"
     
@@ -52,14 +54,12 @@ def input_students
     
     puts "Enter a cohort."
     cohort = STDIN.gets.chop
-    
-    puts "Enter a hobby."
-    hobby = STDIN.gets.chomp
-    
+
     #while the name is not empty, repeat this code
     while !name.empty? do
         #add the student hash to the array
-        @students << {name: name, hobby: hobby,cohort: cohort}
+        add_students(name,cohort)
+        count += 1
         puts "Now we have #{@students.count} student#{@students.count == 1 ? '' : 's'}"
         # get another name from the user
         puts "Enter another name or leave blank to end."
@@ -68,19 +68,25 @@ def input_students
         puts "Enter a cohort or leave blank to end."
         cohort = STDIN.gets.chop
         
-        puts "Enter a hobby or leave blank to end."
-        hobby = STDIN.gets.chop
     end
+    
+    puts "#{count} new students sucsessfully added."
+    puts ""
+    
+    
+end
+
+def add_students(name, cohort)
+    @students << {name: name, cohort: cohort}
 end
 
 def try_load_students
 
-    filename = ARGV.first #argument given in command line to be used as filename
+    filename = ARGV.first == nil ? "students.csv" : RGV.first
     return if filename.nil? #if no filename given then end method
     
     if File.exists?(filename)
         load_students(filename) 
-            puts "Loaded #{@students.count} student#{@students.count == 1 ? '' : 's'} from #{filename}"
     else
         puts "Sorry, #{filename} doesn't exist"
         exit
@@ -88,24 +94,41 @@ def try_load_students
 end
 
 def load_students(filename = "students.csv")
-    file = File.open("students.csv", "r")
-    file.readlines.each do |line|
-    name, cohort = line.chomp.split(',')
-        @students << {name: name, cohort: cohort.to_sym}
+    
+    count = 0
+    
+    File.open("students.csv", "r") do |f|
+        f.readlines.each do |line|
+            name, cohort = line.chomp.split(',')
+                add_students(name, cohort)
+            count +=1
+        end
     end
-    file.close
+    
+    puts "" 
+    puts "#{count} student#{@students.count == 1 ? '' : 's'} loaded from #{filename}."
+    puts ""
 end
 
 def save_students
     
-    file = File.open("students.csv","w")
+    puts "Enter a filename to save to e.g. students.csv"
+    location = gets.chomp
     
-    @students.each do |student|
-        student_data = [student[:name], student[:cohort]]
-        csv_line = student_data.join(",")
-        file.puts csv_line
+    count = 0
+    
+    File.open(location,"w") do |f|
+        @students.each do |student|
+            student_data = [student[:name], student[:cohort]]
+            csv_line = student_data.join(",")
+            f.puts csv_line
+            count += 1
+        end
     end
-    file.close
+    
+    puts ""
+    puts "#{count} student#{@students.count == 1 ? '' : 's'} saved to #{location}."
+    puts ""
 end
     
     
@@ -145,4 +168,5 @@ def print_footer
     end
 end
 
+try_load_students
 interactive_menu
